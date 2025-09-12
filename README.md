@@ -28,7 +28,7 @@ Este repositório contém o código-fonte do **backend** da aplicação **LawSyn
 
 1.  **Clone o repositório:**
     ```sh
-    git clone [https://cursos.alura.com.br/forum/topico-duvida-envio-do-back-para-o-git-273713](https://cursos.alura.com.br/forum/topico-duvida-envio-do-back-para-o-git-273713)
+    git clone [https://github.com/thelaiza/lawsync-backend]
     ```
 2.  **Instale as dependências:**
     ```sh
