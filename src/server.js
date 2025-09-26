@@ -10,7 +10,7 @@ import authMiddleware from "./middleware/authMiddleware.js";
 
 const app = express();
 
-// Log útil para depuração:
+// Log útil para depuração
 console.log("ENV PORT:", process.env.PORT);
 console.log("ENV JWT_SECRET definido?:", Boolean(process.env.JWT_SECRET));
 
@@ -24,13 +24,13 @@ app.use(
   })
 );
 
-// Rotas públicas
-app.use("/api/auth", authRoutes);
+// Rotas públicas (sem prefixo /api, o Vite proxy já tira isso)
+app.use("/auth", authRoutes);
 
 // Rota protegida de exemplo
-app.get("/api/protected", authMiddleware, (req, res) => {
+app.get("/protected", authMiddleware, (req, res) => {
   res.json({
-    message: `Olá ${req.user.name}, acesso liberado.`,
+    message: `Olá ${req.user?.nome || req.user?.name}, acesso liberado.`,
     user: req.user,
   });
 });
@@ -38,9 +38,9 @@ app.get("/api/protected", authMiddleware, (req, res) => {
 // Healthcheck
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
-const PORT = Number(process.env.PORT) || 4000;
+const PORT = Number(process.env.PORT) || 3001;
 
-// Aviso (não derruba o app). No controller de login você já trata ausência da secret.
+// Aviso (não derruba o app)
 if (!process.env.JWT_SECRET) {
   console.warn(
     "⚠️  JWT_SECRET ausente no .env — login vai falhar até você defini-la."
