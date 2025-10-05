@@ -23,6 +23,8 @@ app.use(
       "http://127.0.0.1:5173",
       "http://localhost:3000",
       "http://127.0.0.1:3000",
+      /^https:\/\/.*\.vercel\.app$/, // Permite todos os domínios do Vercel
+      /^https:\/\/.*\.netlify\.app$/, // Permite todos os domínios do Netlify
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
