@@ -1,91 +1,224 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { findUserByEmail, createUser } from "../models/userModel.js";
+import { prisma } from "../lib/prisma.js";
+import {
+  registerSchema,
+  loginSchema,
+  updateProfileSchema,
+  changePasswordSchema,
+} from "../validators/auth.js";
 
-export const register = async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) {
-    return res
-      .status(400)
-      .json({ message: "Todos os campos são obrigatórios.", field: null });
-  }
-
+export const register = async (req, res, next) => {
   try {
-    const existingUser = await findUserByEmail(email);
+    // Validar dados de entrada
+    const validatedData = registerSchema.parse(req.body);
+    const { name, email, password, country, oab } = validatedData;
+
+    // Verificar se usuário já existe
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
     if (existingUser) {
-      // ajuda o front a mostrar o erro no campo email
-      return res
-        .status(409)
-        .json({ message: "Este email já está em uso.", field: "email" });
+      return res.status(409).json({
+        success: false,
+        message: "Este email já está em uso",
+      });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const newUser = await createUser({ name, email, password: passwordHash });
+    // Hash da senha
+    const passwordHash = await bcrypt.hash(password, 12);
 
-    const { password: _, ...userResponse } = newUser;
-    return res
-      .status(201)
-      .json({ message: "Usuário registrado com sucesso!", user: userResponse });
+    // Criar usuário
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: passwordHash,
+        country,
+        oab,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        country: true,
+        oab: true,
+        createdAt: true,
+      },
+    });
+
+    // Gerar token JWT
+    const token = jwt.sign({ userId: newUser.id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Usuário registrado com sucesso",
+      token,
+      user: newUser,
+    });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Erro no servidor ao registrar usuário.",
-        error: error.message,
-      });
+    next(error);
   }
 };
 
-export const login = async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res
-      .status(400)
-      .json({ message: "Email e senha são obrigatórios.", field: null });
-  }
-
+export const login = async (req, res, next) => {
   try {
-    const user = await findUserByEmail(email);
-    if (!user) {
-      // pode apontar pro campo email
-      return res
-        .status(401)
-        .json({ message: "Credenciais inválidas.", field: "email" });
-    }
+    // Validar dados de entrada
+    const validatedData = loginSchema.parse(req.body);
+    const { email, password } = validatedData;
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) {
-      // pode apontar pro campo password
-      return res
-        .status(401)
-        .json({ message: "Credenciais inválidas.", field: "password" });
-    }
-
-    // Segurança: garante que a secret existe (além do check no server.js)
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      return res
-        .status(500)
-        .json({
-          message: "Configuração inválida do servidor (JWT_SECRET ausente).",
-        });
-    }
-
-    const token = jwt.sign({ sub: user.id, name: user.name }, secret, {
-      expiresIn: "1h",
+    // Buscar usuário
+    const user = await prisma.user.findUnique({
+      where: { email },
     });
 
-    return res.status(200).json({
-      message: "Login bem-sucedido!",
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Credenciais inválidas",
+      });
+    }
+
+    // Verificar senha
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Credenciais inválidas",
+      });
+    }
+
+    // Gerar token JWT
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    // Retornar dados do usuário (sem senha)
+    const { password: _, ...userResponse } = user;
+
+    res.json({
+      success: true,
+      message: "Login realizado com sucesso",
       token,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: userResponse,
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Erro no servidor ao fazer login.",
-        error: error.message,
+    next(error);
+  }
+};
+
+export const updateProfile = async (req, res, next) => {
+  try {
+    // Validar dados de entrada
+    const validatedData = updateProfileSchema.parse(req.body);
+
+    // Preparar dados para atualização
+    const updateData = { ...validatedData };
+
+    // Se uma nova senha foi fornecida, fazer hash
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 12);
+    }
+
+    // Verificar se o email já existe (se estiver sendo alterado)
+    if (updateData.email && updateData.email !== req.user.email) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: updateData.email },
       });
+
+      if (existingUser) {
+        return res.status(409).json({
+          success: false,
+          message: "Este email já está em uso",
+        });
+      }
+    }
+
+    // Atualizar usuário
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        country: true,
+        oab: true,
+        updatedAt: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Perfil atualizado com sucesso",
+      user: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const changePassword = async (req, res, next) => {
+  try {
+    // Validar dados de entrada
+    const validatedData = changePasswordSchema.parse(req.body);
+    const { currentPassword, newPassword } = validatedData;
+
+    // Buscar usuário com senha
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        password: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Usuário não encontrado",
+      });
+    }
+
+    // Verificar senha atual
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Senha atual incorreta",
+      });
+    }
+
+    // Verificar se a nova senha é diferente da atual
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        message: "A nova senha deve ser diferente da senha atual",
+      });
+    }
+
+    // Hash da nova senha
+    const newPasswordHash = await bcrypt.hash(newPassword, 12);
+
+    // Atualizar senha
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { password: newPasswordHash },
+    });
+
+    res.json({
+      success: true,
+      message: "Senha alterada com sucesso",
+    });
+  } catch (error) {
+    next(error);
   }
 };
