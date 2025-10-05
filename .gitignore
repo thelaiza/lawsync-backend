@@ -3,3 +3,4 @@ node_modules
 
 # Arquivo de ambiente com informações sensíveis
 .env
+/src/generated/prisma
