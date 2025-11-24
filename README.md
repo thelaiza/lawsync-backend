@@ -1,56 +1,135 @@
-<h1 align="center">📅 LawSync: Agenda Jurídica Digital (Backend) ⚖️</h1>
+# 📅 LawSync: Agenda Jurídica Digital (Backend) ⚖️  
+### PAC – Projeto de Aprendizagem Colaborativa Extensionista  
+### Curso de Engenharia de Software — Católica de Santa Catarina
 
-<p align="center">
-    API RESTful para a plataforma LawSync, uma solução eficiente para escritórios de advocacia gerenciarem os compromissos de seus advogados.
-</p>
+API RESTful para a plataforma **LawSync**, uma solução extensionista desenvolvida para apoiar escritórios de advocacia na organização eficiente de seus compromissos jurídicos. O sistema oferece uma agenda centralizada, interface amigável (via frontend) e um backend robusto que garante a integridade e segurança das informações.
 
-<br>
+---
 
-## 🚀 Sobre o Projeto
+## 👥 Autores  
+- **Jhessica Alves**  
+- **Laíza Silva**  
+- **Victor Moy**
 
-Este repositório contém o código-fonte do **backend** da aplicação **LawSync: Agenda Jurídica**. A API foi desenvolvida para fornecer os endpoints necessários para a gestão de usuários e compromissos, garantindo a segurança e a integridade dos dados.
+---
 
-**🔗 Repositório do Frontend:** [https://github.com/thelaiza/lawsync-frontend]
+## 🎓 Professores Orientadores  
+- **Luiz Carlos Camargo**  
+- **Claudinei Dias**
+
+---
+
+## 🧾 Justificativa do PAC perante a entidade beneficiada
+
+O projeto **LawSync** foi criado para atender a necessidades reais identificadas em um escritório de advocacia parceiro, que apontou dificuldades no controle de compromissos, prazos, audiências e reuniões internas.  
+
+Os principais problemas encontrados pela entidade beneficiada foram:
+
+- Falta de centralização das informações;  
+- Dependência de agendas físicas ou registros manuais;  
+- Risco de esquecimento ou conflito entre compromissos;  
+- Falta de visibilidade entre advogados e equipe administrativa.
+
+O LawSync surge como solução para:
+
+- Centralizar a agenda jurídica;  
+- Evitar conflitos de horário;  
+- Melhorar a comunicação interna;  
+- Facilitar o planejamento das rotinas do escritório.
+
+Dessa forma, o PAC cumpre seu papel social ao aplicar conhecimentos acadêmicos em um sistema funcional que beneficia diretamente a comunidade.
+
+---
+
+## 📝 Descrição do App
+
+O **LawSync** é uma aplicação web projetada para simplificar e organizar a rotina jurídica, composta por **frontend** e **backend**.  
+Este repositório contém o **backend**, que é responsável por:
+
+- Autenticação segura de usuários com JWT;  
+- Cadastro e atualização de usuários;  
+- Cadastro, edição e exclusão de compromissos;  
+- Validação de conflitos de horário;  
+- Comunicação via API com o frontend.
+
+📌 **Repositórios:**
+
+- **Frontend:** https://github.com/thelaiza/lawsync-frontend  
+- **Backend:** https://github.com/thelaiza/lawsync-backend
+
+---
 
 ## 🛠️ Tecnologias Utilizadas
 
-* **Backend:** <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js Badge">
-* **Banco de Dados:** <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL Badge">
+- **Node.js**
+- **Express.js**
+- **JavaScript (ES Modules)**
+- **PostgreSQL**
+- **Prisma ORM**
+- **JSON Web Token (JWT)**
+- **Nodemon**
+
+---
 
 ## ✨ Funcionalidades da API
 
-* 🔒 **Autenticação:** Endpoints para login de usuários com geração de token.
-* 👤 **Gerenciamento de Usuários:** Rotas para criar, listar e atualizar usuários.
-* 🗓️ **Gerenciamento de Compromissos (CRUD):** Endpoints para criar, ler, atualizar e deletar compromissos.
-* 🚫 **Validação de Horários:** Lógica para impedir o cadastro de compromissos com horários inválidos.
+- 🔐 **Login** com JWT  
+- 👤 **CRUD de usuários**  
+- 🗓️ **CRUD de compromissos jurídicos**  
+- ⛔ **Validação automática de horários**  
+- 📡 Integração com o frontend  
+- 🔄 Atualização segura dos dados  
 
-## ⚙️ Como Executar o Projeto
+---
 
-1.  **Clone o repositório:**
-    ```sh
-    git clone [https://github.com/thelaiza/lawsync-backend]
-    ```
-2.  **Instale as dependências:**
-    ```sh
-    npm install
-    ```
-3.  **Configure as variáveis de ambiente:**
-    * Renomeie o arquivo `.env.example` para `.env`.
-    * Preencha as variáveis com os dados de conexão do seu banco de dados PostgreSQL e outras chaves necessárias.
-4.  **Execute as migrações do banco de dados (se aplicável):**
-    ```sh
-    npm run migrate
-    ```
-5.  **Inicie o servidor:**
-    ```sh
-    npm run dev
-    ```
-6.  O servidor estará rodando em `http://localhost:3001` (ou a porta configurada).
+## ⚙️ Requisitos para preparar o ambiente de desenvolvimento
+
+Antes de começar, instale:
+
+- **Node.js 18+**  
+- **PostgreSQL 14+**  
+- **Git**  
+- **NPM ou Yarn**  
+
+---
+
+## 🚀 Como Executar o Projeto
+
+1. **Clone o repositório**
+   ```sh
+   git clone https://github.com/thelaiza/lawsync-backend
+   cd lawync-backend
+   ```
+
+2. **Instale as dependências**
+   ```sh
+   npm install
+   ```
+
+3. **Configure o arquivo `.env`**
+
+   Renomeie `.env.example` para `.env` e preencha:
+
+   ```
+   DATABASE_URL="postgresql://user:password@localhost:5432/lawsync"
+   JWT_SECRET="sua_chave_secreta"
+   ```
+
+4. **Execute as migrações**
+   ```sh
+   npx prisma migrate dev
+   ```
+
+5. **Inicie o servidor**
+   ```sh
+   npm run dev
+   ```
+
+6. A API estará rodando em:  
+   **http://localhost:3001**
 
 ## 🤝 Contribuições
-Jhessica Alves
-Laíza Silva
-Victor Moy
-* Jhessica Alves
-* Laíza Silva
-* Victor Moy
+
+Projeto desenvolvido de forma colaborativa pelos estudantes, como parte do **PAC – Projeto de Aprendizagem Colaborativa Extensionista**, aplicando conhecimentos do curso de Engenharia de Software para resolver problemas reais da comunidade.
+
+---
